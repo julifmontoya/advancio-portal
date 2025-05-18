@@ -5,30 +5,20 @@ import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Wrapper from "./pages/Wrapper";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* home */}
         <Route path="/" element={<Home />} />
-
-        {/* register */}
         <Route path="/register" element={<Register />} />
-
-        {/* login */}
         <Route path="/login" element={<Login />} />
-
- {/* dashboard */}
-        <Route
-          path="/dashboard"
-          element={
-            <Wrapper>
-              <Dashboard />
-            </Wrapper>
-          }
-        />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/dashboard" element={<Wrapper><Dashboard /></Wrapper>}/>
       </Routes>
     </BrowserRouter>
   )

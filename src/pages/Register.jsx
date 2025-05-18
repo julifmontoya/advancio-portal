@@ -19,7 +19,10 @@ function Register() {
       });
 
       const result = await response.json();
-      return result;
+      const data = Array.isArray(result) ? result[0] : result;
+      console.log(data);
+
+      return data;
     } catch (error) {
       console.error("Zoho validation error:", error);
       return {
@@ -33,14 +36,12 @@ function Register() {
     event.preventDefault();
     setMessage("");
 
-    // Step 1: Check if user exists in Zoho Desk
     const zohoResult = await validateWithZoho(email);
     if (!zohoResult.success) {
       setMessage(zohoResult.message);
       return;
     }
 
-    // Step 2: Proceed with Supabase registration
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -59,29 +60,62 @@ function Register() {
   };
 
   return (
-    <div>
-      <h2>Register</h2>
-      <br />
-      {message && <span>{message}</span>}
-      <form onSubmit={handleSubmit}>
-        <input
-          onChange={(e) => setEmail(e.target.value)}
-          value={email}
-          type="email"
-          placeholder="Email"
-          required
-        />
-        <input
-          onChange={(e) => setPassword(e.target.value)}
-          value={password}
-          type="password"
-          placeholder="Password"
-          required
-        />
-        <button type="submit">Create Account</button>
-      </form>
-      <span>Already have an account? </span>
-      <Link to="/login">Log in.</Link>
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-md">
+        <h2 className="text-2xl font-bold text-center text-gray-800">Create your account</h2>
+
+        {message && (
+          <div className="p-3 text-sm text-red-700 bg-red-100 border border-red-300 rounded">
+            {message}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input
+              id="email"
+              onChange={(e) => setEmail(e.target.value)}
+              value={email}
+              type="email"
+              placeholder="Enter your email"
+              required
+              className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <input
+              id="password"
+              onChange={(e) => setPassword(e.target.value)}
+              value={password}
+              type="password"
+              placeholder="Enter your password"
+              required
+              className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full px-4 py-2 font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Create Account
+          </button>
+        </form>
+
+        <p className="text-sm text-center text-gray-600">
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-600 hover:underline">
+            Log in
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

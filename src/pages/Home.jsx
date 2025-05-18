@@ -19,7 +19,7 @@ function Home() {
           <div className="mt-8">
             <Button
               size="lg"
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate("/login")}
               className="cursor-pointer bg-blue-600 hover:bg-blue-700"
             >
               Access Portal
