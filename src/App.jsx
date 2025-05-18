@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Wrapper from "./pages/Wrapper";
 
 function App() {
   return (
@@ -19,9 +20,15 @@ function App() {
         {/* login */}
         <Route path="/login" element={<Login />} />
 
-        {/* dashboard */}
-        <Route path="/dashboard" element={<Dashboard />} />
-
+ {/* dashboard */}
+        <Route
+          path="/dashboard"
+          element={
+            <Wrapper>
+              <Dashboard />
+            </Wrapper>
+          }
+        />
       </Routes>
     </BrowserRouter>
   )
