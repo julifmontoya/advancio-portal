@@ -46,7 +46,7 @@ function Home() {
               { title: 'Track Progress', desc: 'Monitor the status and progress of your tickets in real-time.' },
               { title: 'Communicate', desc: 'Add comments and receive updates from our support team.' },
             ].map(({ title, desc }) => (
-              <div key={title} className="p-6 bg-white shadow rounded-lg">
+              <div key={title} className="p-6 bg-white shadow rounded">
                 <h3 className="text-lg font-medium text-gray-900">{title}</h3>
                 <p className="mt-2 text-base text-gray-500">{desc}</p>
               </div>

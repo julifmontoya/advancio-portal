@@ -18,7 +18,7 @@ function ResetPassword() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-md space-y-4">
+      <div className="w-full max-w-md p-8 bg-white rounded shadow-md space-y-4">
         <h2 className="text-xl font-bold text-center">Set New Password</h2>
 
         {message && (
@@ -34,11 +34,11 @@ function ResetPassword() {
             required
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             type="submit"
-            className="w-full py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+            className="w-full py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700"
           >
             Update Password
           </button>

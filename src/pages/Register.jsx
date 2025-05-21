@@ -19,16 +19,60 @@ function Register() {
       });
 
       const result = await response.json();
-      const data = Array.isArray(result) ? result[0] : result;
-      console.log(data);
+      const crmData = Array.isArray(result) ? result[0] : result;
+      const contactInfo = crmData.contact || crmData[0]?.contact;
 
-      return data;
+      if (!contactInfo) throw new Error("No contact info found");
+
+      return {
+        success: true,
+        contact: {
+          firstName: contactInfo.First_Name !== "null" ? contactInfo.First_Name : "",
+          lastName: contactInfo.Last_Name !== "null" ? contactInfo.Last_Name : "",
+          company: contactInfo.Account_Name || "",
+          phone: contactInfo.Phone || contactInfo.Mobile || null,
+          crmContactId: contactInfo.CRM_id,
+          deskContactId: contactInfo.Desk_id,
+          crmAccountId: contactInfo.CRM_Account_id,
+          deskAccountId: contactInfo.Desk_Account_id,
+        },
+      };
     } catch (error) {
       console.error("Zoho validation error:", error);
       return {
         success: false,
-        message: "Error validating email. Please try again later.",
+        message: "Email not registered as a contact with Advancio. Please contact your account manager",
       };
+    }
+  };
+
+  const updateProfile = async (userId, contact) => {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_TOKEN_KEY}`,
+        },
+        body: JSON.stringify({
+          id: userId,
+          crm_contact_id: contact.crmContactId,
+          desk_contact_id: contact.deskContactId,
+          first_name: contact.firstName,
+          last_name: contact.lastName,
+          company: contact.company,
+          phone: contact.phone,
+          desk_account_id: contact.deskAccountId,
+          crm_account_id: contact.crmAccountId,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error("Error updating profile:", error);
     }
   };
 
@@ -36,23 +80,24 @@ function Register() {
     event.preventDefault();
     setMessage("");
 
+    // Step 1: Validate email with Zoho
     const zohoResult = await validateWithZoho(email);
     if (!zohoResult.success) {
       setMessage(zohoResult.message);
       return;
     }
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    // Step 2: Sign up user with Supabase Auth
+    const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
       setMessage(error.message);
       return;
     }
 
-    if (data) {
+    if (data?.user?.id) {
+      // Step 3: If signup is successful, call your secure backend to update the profile
+      await updateProfile(data.user.id, zohoResult.contact);
       setMessage("User account created!");
       setEmail("");
       setPassword("");
@@ -61,7 +106,7 @@ function Register() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-md">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
         <h2 className="text-2xl font-bold text-center text-gray-800">Create your account</h2>
 
         {message && (
@@ -82,7 +127,7 @@ function Register() {
               type="email"
               placeholder="Enter your email"
               required
-              className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 mt-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -97,13 +142,13 @@ function Register() {
               type="password"
               placeholder="Enter your password"
               required
-              className="w-full px-4 py-2 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 mt-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full px-4 py-2 font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 font-medium text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Create Account
           </button>

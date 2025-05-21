@@ -5,10 +5,12 @@ import { AuthProvider } from './context/AuthContext';
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Dashboard from "./pages/Dashboard";
+import NewTicket from "./pages/NewTicket";
 import Wrapper from "./pages/Wrapper";
+
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/dashboard" element={<Wrapper><Dashboard /></Wrapper>} />
+          <Route path="/new-ticket" element={<Wrapper><NewTicket /></Wrapper>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
