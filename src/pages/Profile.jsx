@@ -1,17 +1,171 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
+import { getProfile } from '../helper/getProfile';
+import { getSessionToken } from '../helper/getSessionToken';
 
 export default function Profile() {
+    const { user } = useAuth();
+    const [profile, setProfile] = useState({
+        first_name: '',
+        last_name: '',
+        company: '',
+        phone: ''
+    });
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [message, setMessage] = useState(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            if (!user?.id) return;
+
+            try {
+                const data = await getProfile(user.id);
+                if (data) {
+                    setProfile({
+                        first_name: data.first_name || '',
+                        last_name: data.last_name || '',
+                        company: data.company || '',
+                        phone: data.phone || ''
+                    });
+                }
+            } catch (err) {
+                console.error('Error fetching profile:', err);
+                setMessage({ type: 'error', text: 'Failed to load profile.' });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProfile();
+    }, [user?.id]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setProfile((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleCancel = () => {
+        navigate('/dashboard');
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        setMessage(null);
+
+        try {
+            const accessToken = await getSessionToken();
+            if (!accessToken) throw new Error('No access token available');
+
+            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    Authorization: `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({
+                    id: user.id,
+                    ...profile,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update profile');
+            }
+
+            setMessage({ type: 'success', text: 'Profile updated successfully!' });
+        } catch (err) {
+            console.error(err);
+            setMessage({ type: 'error', text: 'Error updating profile. Please try again.' });
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     return (
         <div className="flex bg-gray-100">
             <Sidebar />
             <div className="ml-64 flex-1 min-h-screen p-6 overflow-y-auto">
-                <div className="max-w-4xl mx-auto">
-                    <h2 className="text-3xl font-bold tracking-tight mb-4">Profile</h2>
-                    <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer pulvinar tortor ut porta feugiat. Nulla eu erat eu nisl viverra luctus non quis neque. Proin ante urna, interdum volutpat neque sit amet, porttitor fermentum elit. Integer gravida cursus augue, vitae tempus mauris vehicula mattis. Nunc auctor feugiat arcu in tincidunt. Nam bibendum id est quis posuere. Fusce scelerisque orci ipsum. Duis ultricies metus augue, quis mollis magna sagittis sit amet. Phasellus a justo sed nisi mollis sollicitudin ut at sapien. Praesent nec consectetur turpis. Nulla dolor lectus, tincidunt vitae ligula quis, eleifend interdum est. Ut molestie convallis magna vel scelerisque. In ultricies ornare malesuada. Vestibulum vulputate pretium elementum. Quisque quis ante tristique, imperdiet enim nec, tempus sapien. Integer vitae fermentum massa, a sodales nibh. Sed eu faucibus magna, ut pellentesque massa. Vestibulum sit amet ligula lectus. Sed facilisis eu dolor sit amet commodo. Morbi a justo vitae sapien consectetur auctor ac mollis elit. Aenean in viverra arcu. Donec lacus urna, gravida a euismod quis, tincidunt vitae nulla. Vivamus non dui sapien. Fusce eu accumsan lorem, id vestibulum libero. Sed lacinia risus in ipsum suscipit, vitae suscipit felis semper. Ut rhoncus leo non volutpat tincidunt. Pellentesque a sagittis ipsum, in pulvinar erat. Duis sit amet dapibus ipsum, sed finibus elit. Morbi egestas dolor vel condimentum tincidunt. Etiam at blandit ipsum. Aenean in ipsum vitae nisi porta imperdiet nec sit amet risus. Aenean malesuada eu mauris id tincidunt. Nullam posuere, ex vitae maximus malesuada, turpis est efficitur sapien, sed luctus turpis felis ut quam. Mauris vel metus in mauris cursus porttitor. Suspendisse sed sapien tincidunt, finibus tellus eget, egestas neque. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Nam accumsan dui elit, id congue est aliquet efficitur. Nullam et velit aliquet, porttitor nisl vel, egestas mauris. Proin elementum et dolor pretium mattis. Etiam diam arcu, varius vitae risus id, lobortis efficitur ex. Nulla pellentesque lectus semper efficitur dignissim. Curabitur lacinia elementum magna, nec pharetra arcu semper in. Etiam aliquet hendrerit tortor. Cras felis sapien, vulputate sit amet velit id, feugiat facilisis urna. Maecenas justo tellus, sagittis vitae ultricies in, fringilla quis ipsum. Sed ac quam et elit posuere tempor. Nunc rutrum egestas tempus. Nullam non risus iaculis, laoreet turpis eget, blandit orci. Ut id est et tortor accumsan feugiat quis vitae ex. Ut vulputate luctus diam ac pretium. Fusce sem nisl, vulputate non nulla at, euismod pellentesque sem. In porttitor, tellus quis varius varius, enim odio rutrum enim, nec interdum orci diam eget nisi. Pellentesque tortor urna, viverra non dolor in, consectetur malesuada enim. Quisque non ante vitae magna aliquet efficitur. Sed vitae nisi felis. Nam nec mollis odio. Integer porta sapien nec velit consequat, vel aliquet nibh pulvinar. Nunc aliquam, purus nec sodales hendrerit, ipsum arcu tristique augue, vel vehicula quam lorem et dolor. Integer sed rhoncus tortor, sed tincidunt quam. Sed sagittis dui neque, eget ullamcorper nisi pharetra ut. Sed lacinia lobortis sem eu commodo. In sollicitudin est mi, in imperdiet urna pulvinar non. Praesent posuere, ante at malesuada pharetra, erat mi ullamcorper ligula, et pulvinar libero augue nec mi. Maecenas quis nisi tortor. Nunc lobortis placerat dui, vel facilisis elit maximus nec. Quisque nec enim eu diam bibendum pellentesque in in mi. Aliquam fermentum faucibus tortor, nec hendrerit quam scelerisque eu. Nullam sit amet felis mi. Nunc eget elit a augue consequat gravida. Morbi mi dolor, interdum non tempus quis, congue at velit. Praesent sit amet fermentum risus. Suspendisse sed orci ornare, commodo tellus vitae, vehicula ex. Aenean semper faucibus lorem, in blandit mauris. Sed ornare aliquet diam, sit amet consectetur elit suscipit eu. Pellentesque lobortis velit nec odio sollicitudin, eget lacinia elit scelerisque. Cras dictum mi ac bibendum fermentum. Aliquam ut rhoncus urna. Phasellus feugiat gravida ante non consectetur. Donec volutpat pulvinar purus, eget lobortis velit congue at. Curabitur leo lorem, mollis faucibus tincidunt et, luctus eget mauris. Phasellus eu interdum nunc. Praesent laoreet, purus at mattis mattis, enim lectus pellentesque quam, vitae molestie neque lacus luctus turpis. In luctus diam ante, gravida sodales velit aliquam vel. Aliquam elit leo, iaculis sed sem vehicula, vestibulum vulputate ligula. Maecenas nec neque ornare, finibus nisi ac, hendrerit purus. Phasellus suscipit augue vitae odio auctor tincidunt. Vivamus rhoncus nulla rhoncus diam porttitor, vitae pellentesque dolor accumsan. Cras a lectus eu ante vestibulum commodo. Sed lacus elit, sagittis non lacinia nec, placerat sed felis. Suspendisse eu posuere risus. In efficitur lacus quis est sollicitudin, vel vulputate nisl viverra. Proin vehicula erat vel velit porta, eget tristique nunc tempor. In hac habitasse platea dictumst. Duis eget erat egestas, posuere lectus congue, dictum tellus. Phasellus venenatis convallis ipsum placerat laoreet. In et lectus consequat, ornare magna sed, porttitor felis. Mauris aliquet viverra erat vitae consequat. Maecenas id scelerisque nulla. Quisque ornare eros id euismod aliquam. Sed ultrices turpis a aliquam tempus. Quisque tempus, justo eu placerat euismod, massa est ornare quam, in malesuada est neque in neque. Proin fringilla quis elit et tincidunt. Praesent mollis dui sed dapibus dictum. Donec varius feugiat nulla a fringilla. Donec id fringilla ligula. In congue consectetur ligula, ac vehicula sapien sollicitudin vitae. Curabitur luctus vitae orci et gravida. Donec ut elit quis sapien suscipit lobortis in sit amet felis. Mauris pellentesque ac neque id auctor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Nullam nec tortor sit amet nisi dignissim interdum sed sit amet nunc. Nullam a tortor quis ex lacinia tincidunt a vel elit. Integer non lectus lorem. Aenean lobortis erat fringilla augue auctor sollicituden. Maecenas mattis sed lacus interdum dictum. Proin vel ipsum ut tellus hendrerit condimentum ac ut justo. Cras porttitor ex sit amet tellus blandit, non cursus mi accumsan. Maecenas dolor libero, tristique nec libero non, feugiat interdum ipsum. Vivamus tortor eros, lacinia a sagittis at, finibus ut mauris. Integer ut sagittis nisi. Aliquam egestas dui eu lectus porta, sed placerat massa blandit. Fusce id massa dui. Proin quis pretium diam. Cras leo augue, mollis quis ut, efficitur mollis erat. Pellentesque laoreet rutrum mi a lobortis. Nulla at porttitor nunc, et mattis metus. Praesent malesuada, quam sit amet eleifend dictum, justo quam convallis nisi, nec lacinia diam orci at ligula. Cras convallis volutpat quam, quis vulputate turpis ullamcorper ac. Aliquam ac magna aliquet, sollicitudin purus vitae, ullamcorper ipsum. Suspendisse sed augue at mi malesuada aliquam quis nec augue. Sed tincidunt magna arcu, at pharetra elit efficitur nec. Nulla facilisi. Pellentesque sed sem ut odio pharetra eleifend eget ac magna. Pellentesque vitae dignissim massa. Vivamus blandit nunc in nisi pellentesque interdum non ac dolor. Aenean pellentesque tincidunt molestie. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Maecenas vitae fringilla ipsum. Fusce ut facilisis lectus, quis iaculis metus. Donec fringilla bibendum dictum. Nulla luctus luctus lorem, a auctor ante elementum in. Duis sit amet tellus ut neque tristique sollicitudin nec eget orci. Duis accumsan mi at nulla aliquet imperdiet. Curabitur non quam ex. Pellentesque imperdiet orci non ex dictum interdum. Curabitur tincidunt suscipit risus, in hendrerit urna rhoncus quis. Praesent non euismod sapien. Vivamus id justo ac odio tristique accumsan. Nullam a euismod mi. Phasellus eget suscipit odio, eu molestie leo. Fusce interdum libero purus, eu efficitur sem pharetra sed. Sed vehicula non ex ut aliquam. Curabitur velit justo, fringilla sed dolor sed, laoreet dapibus ex. Pellentesque non convallis orci. Ut fermentum sit amet tellus at placerat. Cras ut ipsum diam. Mauris quis mauris velit. Nullam tempor libero at justo sollicitudin, rhoncus sollicitudin nisl venenatis. Integer non urna in risus malesuada congue nec sit amet lectus. Nam sit amet ultrices quam. Quisque laoreet euismod neque, faucibus dapibus enim tristique sit amet. Phasellus pellentesque diam quis purus interdum, id tincidunt odio lacinia. Proin eu erat non arcu dapibus ornare. Duis vitae erat commodo, feugiat magna a, rutrum lorem. Integer dictum turpis eget sem facilisis dignissim. Duis quis consequat ante. Sed eu cursus sem. Aenean a dapibus nisl. Sed rhoncus varius velit, a tincidunt nibh hendrerit non. Curabitur mattis lectus eu est molestie, eget molestie ex tristique. Nulla dignissim justo non pulvinar posuere. Nunc non elit eros. Maecenas in urna tellus. Interdum et malesuada fames ac ante ipsum primis in faucibus. Quisque elementum pharetra tellus sit amet varius. Proin vitae ante nec ligula sollicitudin ultrices vel nec massa. Duis consectetur mi sit amet luctus gravida. Phasellus non neque arcu. Maecenas viverra nisl a convallis scelerisque. Ut vel felis ut est viverra vestibulum at ut dui. Maecenas malesuada porttitor lectus, in vehicula neque dignissim et. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris fermentum, nisl in mollis luctus, ex nunc laoreet magna, vel porta nibh eros sit amet ipsum. Nunc consectetur placerat nulla et ullamcorper. Nam ultricies odio nibh, sit amet sodales nisi iaculis vel. Interdum et malesuada fames ac ante ipsum primis in faucibus.
-                    </p>
-                </div>
+                <h2 className="text-3xl font-bold tracking-tight mb-4">Profile</h2>
+                {loading ? (
+                    <p>Loading profile...</p>
+                ) : (
+                    <form onSubmit={handleSubmit} className="w-full max-w-xl bg-white p-10 rounded-xl shadow-md space-y-6">
+
+                        <div className="space-y-2">
+                            <label className="block font-medium">First Name</label>
+                            <input
+                                name="first_name"
+                                value={profile.first_name}
+                                onChange={handleChange}
+                                className="w-full border px-4 py-2 rounded"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block font-medium">Last Name</label>
+                            <input
+                                name="last_name"
+                                value={profile.last_name}
+                                onChange={handleChange}
+                                className="w-full border px-4 py-2 rounded"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block font-medium">Company</label>
+                            <input
+                                name="company"
+                                value={profile.company}
+                                onChange={handleChange}
+                                className="w-full border px-4 py-2 rounded"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block font-medium">Phone</label>
+                            <input
+                                name="phone"
+                                value={profile.phone}
+                                onChange={handleChange}
+                                className="w-full border px-4 py-2 rounded"
+                            />
+                        </div>
+
+                        {message && (
+                            <div
+                                className={`text-sm font-medium px-4 py-2 rounded ${message.type === 'success'
+                                    ? 'bg-green-100 text-green-700 border border-green-300'
+                                    : 'bg-red-100 text-red-700 border border-red-300'
+                                    }`}
+                            >
+                                {message.text}
+                            </div>
+                        )}
+
+                        <div className="flex space-x-4 pt-4">
+                            <button
+                                type="button"
+                                onClick={handleCancel}
+                                className="cursor-pointer px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={submitting}
+                                className="cursor-pointer px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded disabled:opacity-50"
+                            >
+                                {submitting ? 'Submitting...' : 'Submit'}
+                            </button>
+                        </div>
+                    </form>
+                )}
             </div>
         </div>
     );

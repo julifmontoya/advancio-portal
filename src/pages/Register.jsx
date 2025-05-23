@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import supabase from "../helper/supabaseClient";
 import { Link } from "react-router-dom";
+import { getSessionToken } from '../helper/getSessionToken';
 
 function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
+  
 
   const validateWithZoho = async (email) => {
     try {
@@ -48,6 +49,9 @@ function Register() {
   };
 
   const updateProfile = async (userId, contact) => {
+    const accessToken = await getSessionToken();
+    if (!accessToken) throw new Error('No access token available');
+
     const response = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`,
       {
@@ -55,7 +59,7 @@ function Register() {
         headers: {
           "Content-Type": "application/json",
           apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_TOKEN_KEY}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           id: userId,

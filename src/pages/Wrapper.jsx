@@ -13,34 +13,29 @@ const Wrapper = ({ children }) => {
 export default Wrapper;
  */
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import supabase from "../helper/supabaseClient";
 import { Navigate } from "react-router-dom";
 
 function Wrapper({ children }) {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(null); // null = unknown
 
   useEffect(() => {
-    const getSession = async () => {
+    const checkSession = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
       setAuthenticated(!!session);
-      setLoading(false);
     };
 
-    getSession();
+    checkSession();
   }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  } else {
-    if (authenticated) {
-      return <>{children}</>;
-    }
-    return <Navigate to="/login" />;
+  if (authenticated === null) {
+    return null; // show nothing while checking
   }
+
+  return authenticated ? <>{children}</> : <Navigate to="/login" />;
 }
 
 export default Wrapper;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 
@@ -155,7 +155,9 @@ const ReadTicketWithComments = () => {
             Error: {ticketError}
           </div>
         ) : ticket ? (
+
           <div className="bg-white p-4 rounded shadow">
+
             <a
               href={ticket.webUrl}
               target="_blank"
@@ -168,9 +170,8 @@ const ReadTicketWithComments = () => {
               <p>
                 Status:{' '}
                 <span
-                  className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${
-                    statusColors[ticket.statusType] || 'bg-gray-200 text-gray-800'
-                  }`}
+                  className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${statusColors[ticket.statusType] || 'bg-gray-200 text-gray-800'
+                    }`}
                 >
                   {ticket.statusType}
                 </span>
@@ -179,28 +180,38 @@ const ReadTicketWithComments = () => {
               <p>Created: {new Date(ticket.createdTime).toLocaleString()}</p>
               <p>dueDate: {new Date(ticket.dueDate).toLocaleString()}</p>
             </div>
-            <p className="mt-2 whitespace-pre-line">{ticket.description}</p>
+
+            {/* Description Section */}
+            <div className="mt-2">
+              <h3 className="text-gray-800 font-semibold mb-1">Description:</h3>
+              <div
+                className="whitespace-pre-line text-gray-700 bg-gray-50 p-3 rounded border border-gray-200"
+                dangerouslySetInnerHTML={{ __html: ticket.description }}
+              />
+            </div>
+
+            {/* Create Comment */}
+            <div className="mt-4">
+              <textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Write a comment..."
+                className="w-full p-2 mb-2 border border-gray-300 rounded rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={3}
+              />
+              {commentError && <p className="text-red-500 mb-2">{commentError}</p>}
+              <button
+                onClick={handlePostComment}
+                className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 text-sm"
+              >
+                Add Comment
+              </button>
+            </div>
           </div>
         ) : null}
-
-        {/* Comments */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Comments</h2>
-          <textarea
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Write a comment..."
-            className="w-full p-2 border rounded mb-2"
-            rows={3}
-          />
-          {commentError && <p className="text-red-500 mb-2">{commentError}</p>}
-          <button
-            onClick={handlePostComment}
-            className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            Post Comment
-          </button>
 
+          <h2 className="text-xl font-semibold mt-4 mb-4">Comments</h2>
           {commentsLoading ? (
             <p className="mt-4">Loading comments...</p>
           ) : commentsError ? (
@@ -208,21 +219,27 @@ const ReadTicketWithComments = () => {
           ) : comments.length === 0 ? (
             <p className="text-gray-500 mt-4">No comments yet.</p>
           ) : (
+
             <ul className="space-y-4 mt-4 mb-6">
               {comments.map((comment) => (
-                <li key={comment.id} className="bg-white p-4 rounded shadow">
+                <li key={comment.id} className="bg-white p-4 rounded shadow"> {/* This is already a good card */}
                   <div className="flex items-center space-x-2 mb-2">
                     <div>
                       <p className="font-semibold">{comment.commenter?.name || 'Anonymous'}</p>
                       <p className="text-sm text-gray-500">{formatRelativeTime(comment.commentedTime)}</p>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-800 whitespace-pre-line">{comment.content}</p>
+                {/*   <p className="text-sm text-gray-800 whitespace-pre-line">{comment.content}</p> */}
+                  <div
+                    className="text-sm"
+                    dangerouslySetInnerHTML={{ __html: comment.content }}
+                  />
                 </li>
               ))}
             </ul>
           )}
         </div>
+
       </div>
     </div>
   );

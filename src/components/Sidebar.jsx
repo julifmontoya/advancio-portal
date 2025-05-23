@@ -1,13 +1,10 @@
-import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-// Asegúrate de importar Supabase si lo usas
 // import supabase from '../supabaseClient'; 
 
 const Sidebar = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Comenta o elimina esto si no estás usando Supabase por ahora
     const signOut = async () => {
         // const { error } = await supabase.auth.signOut();
         // if (error) {
@@ -16,7 +13,7 @@ const Sidebar = () => {
         //     navigate("/login");
         // }
         console.log("Sign out attempted (Supabase not imported)");
-        navigate("/login"); // Para que funcione sin Supabase
+        navigate("/login");
     };
 
     const linkClass = (path) =>
@@ -26,10 +23,10 @@ const Sidebar = () => {
         }`;
 
     return (
-        // Asegúrate de que el aside tenga estas clases:
-        <aside className="fixed top-0 left-0 w-64 h-screen bg-gray-800 text-white p-6 flex flex-col gap-4 z-10"> 
+        <aside className="fixed top-0 left-0 w-64 h-screen bg-gray-800 text-white p-6 flex flex-col gap-4 z-10">
             <h2 className="text-xl font-bold mb-4">Support Portal</h2>
             <nav className="flex flex-col gap-3">
+                <Link to="/dashboard" className={linkClass('/dashboard')}>Dashboard</Link>
                 <Link to="/tickets" className={linkClass('/tickets')}>Tickets</Link>
                 <Link to="/profile" className={linkClass('/profile')}>Profile</Link>
                 <p
