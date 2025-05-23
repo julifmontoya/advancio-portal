@@ -42,7 +42,7 @@ function ForgotPassword() {
           />
           <button
             type="submit"
-            className="w-full py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700"
+            className="cursor-pointer w-full py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700"
           >
             Send Reset Link
           </button>

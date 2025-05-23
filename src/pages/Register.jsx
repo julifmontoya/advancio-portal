@@ -6,6 +6,7 @@ function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const validateWithZoho = async (email) => {
     try {
@@ -110,7 +111,7 @@ function Register() {
         <h2 className="text-2xl font-bold text-center text-gray-800">Create your account</h2>
 
         {message && (
-          <div className="p-3 text-sm text-red-700 bg-red-100 border border-red-300 rounded">
+          <div className="p-3 text-sm rounded border border-gray-300">
             {message}
           </div>
         )}
@@ -148,7 +149,7 @@ function Register() {
 
           <button
             type="submit"
-            className="w-full px-4 py-2 font-medium text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="cursor-pointer w-full px-4 py-2 font-medium text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Create Account
           </button>
